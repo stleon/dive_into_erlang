@@ -1,7 +1,7 @@
 -module(recursion).
 -export([tail_fac/1, tail_fac/2, tail_len/1, tail_len/2, tail_duplicate/2,
          tail_duplicate/3, tail_reverse/1, tail_reverse/2, tail_sublist/2,
-         tail_sublist/3]).
+         tail_sublist/3, tail_zip/2, tail_zip/3]).
 
 % fac(0) -> 1;
 % fac(N) when N > 0 -> N * fac(N - 1).
@@ -42,3 +42,13 @@ tail_sublist([], _, Sublist) -> Sublist;
 tail_sublist(_, 0, Sublist) -> Sublist;
 tail_sublist([H|T], N, Sublist) when N > 0 ->
     tail_sublist(T, N - 1, [H|Sublist]).
+
+% zip([], _) -> [];
+% zip(_, []) -> [];
+% zip([Hx|Tx], [Hy|Ty]) -> [{Hx, Hy}|zip(Tx, Ty)].
+
+tail_zip(Lx, Ly) -> tail_reverse(tail_zip(Lx, Ly, [])).
+tail_zip([], _, Acc) -> Acc;
+tail_zip(_, [], Acc) -> Acc;
+tail_zip([Hx|Tx], [Hy|Ty], Acc) ->
+    tail_zip(Tx, Ty, [{Hx, Hy}|Acc]).
