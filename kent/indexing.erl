@@ -6,13 +6,13 @@
 clean_line(Data) when length(Data) < 3 -> [];
 
 clean_line(Data) when length(Data) >= 3 ->
-    Line = string:to_lower(string:strip(Data, both)),
+    Line = string:to_lower(Data),
     Tokens = string:tokens(Line, " ").
 
 read(Device) ->
     case file:read_line(Device) of
         % line numbers
-        {ok, Data} -> [clean_line(Data) | read(Device)];
+        {ok, Data} -> [clean_line(string:strip(Data, both)) | read(Device)];
         eof -> []
     end.
 
