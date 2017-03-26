@@ -11,14 +11,22 @@ clean_line(Data) when length(Data) >= 3 ->
     Tokens = string:tokens(Line, " "),
     Tokens.
 
+cleaner(Data) ->
+    io:format("Get: ~s ~n", [Data]),
+    Data.
+
 read(Device) ->
     case file:read_line(Device) of
         % line numbers
-        {ok, Data} -> [clean_line(string:strip(Data, both)) | read(Device)];
+        % remove all, that not character
+        {ok, Data} -> [cleaner(Data) | read(Device)];
         eof -> []
     end.
 
 run(FileName) ->
+    {ok, MP} = re:compile("(\w{3,})+", [caseless]),
+    re:run("Permission is hereby granted, free of charge, to any person obtaining a copy", 
+        MP, [{capture, all, list}]).
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
     try read(Device)
       after file:close(Device)
