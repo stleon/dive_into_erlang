@@ -24,9 +24,9 @@ read(Device) ->
     end.
 
 run(FileName) ->
-    {ok, MP} = re:compile("(\w{3,})+", [caseless]),
-    re:run("Permission is hereby granted, free of charge, to any person obtaining a copy", 
-        MP, [{capture, all, list}]).
+    {ok, MP} = re:compile("\\w{3,}", [caseless]),
+    {match, Captured} =  re:run("Oh Lol match here no", MP,
+                                                [global, {capture, all, list}]),
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
     try read(Device)
       after file:close(Device)
