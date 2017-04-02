@@ -10,6 +10,10 @@ search_words(MP, Data) ->
     end.
 
 
+make_inverted_index([], Index) -> Index;
+% make_inverted_index([H|T], Index) ->
+    
+
 read(Device) ->
     {ok, MP} = re:compile("\\w{3,}", [caseless]),
     
