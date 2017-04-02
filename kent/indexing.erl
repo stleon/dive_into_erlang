@@ -4,9 +4,8 @@
 % { "foo" , [{3,5},{7,7},{11,13}] }
 
 search_words(MP, Data) -> 
-    % to lower case all results
     case re:run(Data, MP, [global, {capture, all, list}]) of
-        {match, Captured} -> lists:merge(Captured);
+        {match, Captured} -> [string:to_lower(X) || X <- lists:merge(Captured)];
         nomatch -> [] % not empty results
     end.
 
