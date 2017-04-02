@@ -6,7 +6,7 @@
 search_words(MP, Data) -> 
     case re:run(Data, MP, [global, {capture, all, list}]) of
         {match, Captured} -> [string:to_lower(X) || X <- lists:merge(Captured)];
-        nomatch -> [] % not empty results
+        nomatch -> []
     end.
 
 
@@ -20,6 +20,9 @@ read(Device) ->
 
 run(FileName) ->
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
-    try read(Device)
-      after file:close(Device)
+    try 
+        Words = read(Device),
+        io:format("~p", [Words])
+    after
+        file:close(Device)
     end.
