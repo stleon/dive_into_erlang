@@ -11,8 +11,17 @@ search_words(MP, Data) ->
 
 
 make_inverted_index([], Index) -> Index;
-% make_inverted_index([H|T], Index) ->
-    
+make_inverted_index([H|T], Index) ->
+    % TODO: add to list line numbers, not values
+    IsKey = maps:is_key(H, Index),
+    if
+        IsKey == true ->
+            NewValue = [H | maps:get(H, Index)],
+            make_inverted_index(T, maps:update(H, NewValue, Index));
+        IsKey == false ->
+            make_inverted_index(T, maps:put(H, [], Index))
+        end.
+
 
 read(Device) ->
     {ok, MP} = re:compile("\\w{3,}", [caseless]),
