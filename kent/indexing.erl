@@ -3,39 +3,40 @@
 
 % { "foo" , [{3,5},{7,7},{11,13}] }
 
-search_words(MP, Data) -> 
+insert([H | _], Line) ->
+    % TODO insert all line at once
+    % ets:insert(index, {string:to_lower(Word), Line}).
+    io:format("~p: ~p~n", [string:to_lower(H), Line]),
+    ets:insert(index, {string:to_lower(H), Line}).
+
+
+search_words(MP, Data, Line) ->
     case re:run(Data, MP, [global, {capture, all, list}]) of
-        {match, Captured} -> [string:to_lower(X) || X <- lists:merge(Captured)];
-        nomatch -> []
+        {match, Captured} ->
+            % Captured = [["MIT"],["License"]]
+            lists:foreach(fun(Word) -> insert(Word, Line) end, Captured);
+        nomatch -> ok
     end.
 
 
-make_inverted_index([], Index) -> Index;
-make_inverted_index([H|T], Index) ->
-    % TODO: add to list line numbers, not values
-    IsKey = maps:is_key(H, Index),
-    if
-        IsKey == true ->
-            NewValue = [H | maps:get(H, Index)],
-            make_inverted_index(T, maps:update(H, NewValue, Index));
-        IsKey == false ->
-            make_inverted_index(T, maps:put(H, [], Index))
-        end.
-
-
-read(Device) ->
+read(Device) -> read(Device, 1).
+read(Device, Line) ->
     {ok, MP} = re:compile("\\w{3,}", [caseless]),
     
     case file:read_line(Device) of
-        {ok, Data} -> [search_words(MP, Data) | read(Device)];
-        eof -> []
+        {ok, Data} -> 
+            search_words(MP, Data, Line),
+            read(Device, Line + 1);
+        eof -> ok
     end.
+
 
 run(FileName) ->
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
+    ets:new(index, [duplicate_bag, named_table]),
     try 
-        Words = read(Device),
-        io:format("~p", [Words])
+        read(Device)
     after
-        file:close(Device)
+        file:close(Device),
+        ets:delete(index)
     end.
