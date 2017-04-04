@@ -6,6 +6,7 @@
 search_words(MP, Data, Line) ->
     case re:run(Data, MP, [global, {capture, all, list}]) of
         {match, Captured} ->
+            % TODO remove duplicates
             Words = [{string:to_lower(H), Line} || [H | _] <- Captured],
             ets:insert(index, Words);
         nomatch -> ok
@@ -25,9 +26,11 @@ read(Device, Line) ->
 
 
 run(FileName) ->
+    % TODO promt file_name
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
     ets:new(index, [duplicate_bag, named_table]),
-    try 
+    try
+        % TODO promt
         read(Device),
         ets:lookup(index, "the")
     after
