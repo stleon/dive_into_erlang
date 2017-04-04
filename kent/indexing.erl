@@ -3,18 +3,11 @@
 
 % { "foo" , [{3,5},{7,7},{11,13}] }
 
-insert([H | _], Line) ->
-    % TODO insert all line at once
-    % ets:insert(index, {string:to_lower(Word), Line}).
-    io:format("~p: ~p~n", [string:to_lower(H), Line]),
-    ets:insert(index, {string:to_lower(H), Line}).
-
-
 search_words(MP, Data, Line) ->
     case re:run(Data, MP, [global, {capture, all, list}]) of
         {match, Captured} ->
-            % Captured = [["MIT"],["License"]]
-            lists:foreach(fun(Word) -> insert(Word, Line) end, Captured);
+            Words = [{string:to_lower(H), Line} || [H | _] <- Captured],
+            ets:insert(index, Words);
         nomatch -> ok
     end.
 
@@ -35,7 +28,8 @@ run(FileName) ->
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
     ets:new(index, [duplicate_bag, named_table]),
     try 
-        read(Device)
+        read(Device),
+        ets:lookup(index, "the")
     after
         file:close(Device),
         ets:delete(index)
