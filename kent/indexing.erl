@@ -1,6 +1,15 @@
 -module(indexing).
 -compile(export_all).
 
+
+% how to run
+% erlc indexing.erl
+% erl -noshell -s indexing main LICENSE the
+
+% or simple
+
+% escript indexing.erl LICENSE the
+
 % { "foo" , [{3,5},{7,7},{11,13}] }
 
 search_words(MP, Data, Line) ->
@@ -25,15 +34,15 @@ read(Device, Line) ->
     end.
 
 
-run(FileName) ->
-    % TODO promt file_name
+main([FileName, Word]) ->
+    io:format("FILE: ~p~nWORD: ~p~n", [FileName, Word]),
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
     ets:new(index, [duplicate_bag, named_table]),
     try
-        % TODO promt
         read(Device),
-        ets:lookup(index, "the")
+        io:format("~p~n", [ets:lookup(index, Word)])
     after
         file:close(Device),
-        ets:delete(index)
+        ets:delete(index),
+        erlang:halt(0)
     end.
