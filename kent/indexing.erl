@@ -3,11 +3,6 @@
 
 
 % how to run
-% erlc indexing.erl
-% erl -noshell -s indexing main LICENSE the
-
-% or simple
-
 % escript indexing.erl LICENSE the
 
 % { "foo" , [{3,5},{7,7},{11,13}] }
