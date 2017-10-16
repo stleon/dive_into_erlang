@@ -1,5 +1,5 @@
 -module(indexing).
--compile(export_all).
+-export([main/1]).
 
 
 % how to run
@@ -17,14 +17,13 @@ search_words(MP, Data, Line) ->
     end.
 
 
-read(Device) -> read(Device, 1).
-read(Device, Line) ->
+read_by_line(Device, Line) ->
     {ok, MP} = re:compile("\\w{3,}", [caseless]),
     
     case file:read_line(Device) of
         {ok, Data} -> 
             search_words(MP, Data, Line),
-            read(Device, Line + 1);
+            read_by_line(Device, Line + 1);
         eof -> ok
     end.
 
@@ -34,7 +33,7 @@ main([FileName, Word]) ->
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
     ets:new(index, [duplicate_bag, named_table]),
     try
-        read(Device),
+        read_by_line(Device, 1),
         io:format("~p~n", [ets:lookup(index, Word)])
     after
         file:close(Device),
