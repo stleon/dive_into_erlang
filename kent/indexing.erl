@@ -28,7 +28,7 @@ read_by_line(Device, Line) ->
     end.
 
 
-main([FileName, Word]) ->
+main([FileName, Word]) when is_list(FileName) and is_list(Word) ->
     io:format("FILE: ~p~nWORD: ~p~n", [FileName, Word]),
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
     ets:new(index, [duplicate_bag, named_table]),
