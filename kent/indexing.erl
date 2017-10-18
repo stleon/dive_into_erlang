@@ -7,8 +7,8 @@
 
 % { "foo" , [{3,5},{7,7},{11,13}] }
 
-search_words(MP, Data, Line) ->
-    case re:run(Data, MP, [global, {capture, all, list}]) of
+search_words(CompRegex, Data, Line) ->
+    case re:run(Data, CompRegex, [global, {capture, all, list}]) of
         {match, Captured} ->
             % TODO remove duplicates
             Words = [{string:to_lower(H), Line} || [H | _] <- Captured],
@@ -17,13 +17,12 @@ search_words(MP, Data, Line) ->
     end.
 
 
-read_by_line(Device, Line) ->
-    {ok, MP} = re:compile("\\w{3,}", [caseless]),
-    
+read_by_line(Device, CompRegex, Line) ->
+
     case file:read_line(Device) of
         {ok, Data} -> 
-            search_words(MP, Data, Line),
-            read_by_line(Device, Line + 1);
+            search_words(CompRegex, Data, Line),
+            read_by_line(Device, CompRegex, Line + 1);
         eof -> ok
     end.
 
@@ -31,12 +30,25 @@ read_by_line(Device, Line) ->
 main([FileName, Word]) when is_list(FileName) and is_list(Word) ->
     io:format("FILE: ~p~nWORD: ~p~n", [FileName, Word]),
     {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
-    ets:new(index, [duplicate_bag, named_table]),
+    {ok, CompRegex} = re:compile("\\w{3,}", [caseless]),
+
+
+
+
+    % ets:new(index, [duplicate_bag, named_table]),
     try
-        read_by_line(Device, 1),
+        read_by_line(Device, CompRegex, 1),
         io:format("~p~n", [ets:lookup(index, Word)])
     after
         file:close(Device),
-        ets:delete(index),
-        erlang:halt(0)
+        ets:delete(index)
+        % erlang:halt(0)
     end.
+
+%  D = dict:new()
+% dict:find("lol", S).
+dict_api(D, Word, Line) ->
+    dict:store(Word, [Line], D);
+
+dict_api(D, Word, Line) when dict:is_key(Word, D) ->
+    dict:append(Word, Line, D).
