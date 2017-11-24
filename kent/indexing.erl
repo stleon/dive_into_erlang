@@ -3,7 +3,7 @@
 
 
 % how to run
-% escript indexing.erl LICENSE the
+% escript indexing.erl shapes.erl the
 
 % { "foo" , [{3,5},{7,7},{11,13}] }
 
@@ -27,15 +27,22 @@ read_by_line(Device, CompRegex, Line) ->
     end.
 
 
+is_valid_file(FileName) ->
+    case file:open(FileName, [read, raw, read_ahead]) of
+        {ok, Device} ->
+            Device;
+        {error, Reason} ->
+            exit(Reason)
+    end.
+
+
 main([FileName, Word]) when is_list(FileName) and is_list(Word) ->
     io:format("FILE: ~p~nWORD: ~p~n", [FileName, Word]),
-    {ok, Device} = file:open(FileName, [read, raw, read_ahead]),
+
+    Device = is_valid_file(FileName),
     {ok, CompRegex} = re:compile("\\w{3,}", [caseless]),
+    ets:new(index, [duplicate_bag, named_table]),
 
-
-
-
-    % ets:new(index, [duplicate_bag, named_table]),
     try
         read_by_line(Device, CompRegex, 1),
         io:format("~p~n", [ets:lookup(index, Word)])
@@ -44,11 +51,3 @@ main([FileName, Word]) when is_list(FileName) and is_list(Word) ->
         ets:delete(index)
         % erlang:halt(0)
     end.
-
-%  D = dict:new()
-% dict:find("lol", S).
-dict_api(D, Word, Line) ->
-    dict:store(Word, [Line], D);
-
-dict_api(D, Word, Line) when dict:is_key(Word, D) ->
-    dict:append(Word, Line, D).
