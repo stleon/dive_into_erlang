@@ -2,8 +2,12 @@
 -export([main/1]).
 -define(CompRegex, re:compile("\\w{3,}", [caseless])).
 
+% task
+% https://www.futurelearn.com/courses/functional-programming-erlang/1/assignments/161822/
+
 % how to run
-% escript indexing.erl shapes.erl the
+% get files from task dickens-christmas.txt & gettysburg-address.txt
+% escript indexing.erl gettysburg-address.txt foo
 
 % { "foo" , [{3,5},{7,7},{11,13}] }
 
@@ -47,9 +51,33 @@ main([FileName, Word]) when is_list(FileName) and is_list(Word) ->
 
     try
         read_by_line(Device, 1),
-        io:format("~p~n", [ets:lookup(index, Word)])
+        % [{"the",3}, {"the",15}, {"the",17}, {"the",18}] -> [3, 15, 17, 18]
+        LineNums = proplists:append_values(Word, ets:lookup(index, Word)),
+        io:format("~p: ~p", [Word, to_range(LineNums)])
     after
         file:close(Device),
         ets:delete(index)
         % erlang:halt(0)
+    end.
+
+% { "foo" , [{3,5},{7,7},{11,13}] }
+%           3, 4, 5, 7, 11, 12, 13
+
+
+% [3, 4, 5, 7, 11, 12, 13]
+% [{3, 5}, {7, 7}, {11, 13}]
+to_range(L) -> to_range(L, []).
+
+to_range([], Acc) -> lists:reverse(Acc);
+
+to_range([H|T], []) ->
+    to_range(T, [{H, H}]);
+
+to_range([H|T], Acc) ->
+    [{Start, End}|T1] = Acc,
+    if
+        H - End =< 1 ->
+            to_range(T, [{Start, H}|T1]);
+        H - End > 1 ->
+            to_range(T, [{H, H}|Acc])
     end.
