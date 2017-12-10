@@ -7,9 +7,8 @@
 
 % how to run
 % get files from task dickens-christmas.txt & gettysburg-address.txt
-% escript indexing.erl gettysburg-address.txt foo
+% escript indexing.erl gettysburg-address.txt
 
-% { "foo" , [{3,5},{7,7},{11,13}] }
 
 search_words(Data, Line) ->
     % run regex and insert proplist to ets table
@@ -43,23 +42,33 @@ is_valid_file(FileName) ->
     end.
 
 
-main([FileName, Word]) when is_list(FileName) and is_list(Word) ->
-    io:format("FILE: ~p~nWORD: ~p~n", [FileName, Word]),
+main([FileName]) when is_list(FileName) ->
+    io:format("FILE: ~p~n", [FileName]),
 
     Device = is_valid_file(FileName),
     ets:new(index, [bag, named_table]),
 
     try
         read_by_line(Device, 1),
-        io:format("~p: ~p", [Word, to_range(ets:lookup(index, Word))])
+        print_result(ets:first(index))
     after
         file:close(Device),
         ets:delete(index)
         % erlang:halt(0)
     end.
 
+print_result(Key) ->
+    % iterate through keys and print result
+    io:format("~p: ~p ~n", [Key, to_range(ets:lookup(index, Key))]),
+    NextKey = ets:next(index, Key),
+    if is_list(NextKey) ->
+            print_result(NextKey);
+        is_atom(NextKey) and ('$end_of_table' == NextKey) ->
+            ok
+    end.
 
-to_range(L) ->
+
+to_range(L) when is_list(L) ->
     % converts
     % [{"the",3}, {"the",15}, {"the",17}, {"the",18}, {"the",19}]
     % to [{3, 3}, {15, 15}, {17, 19}]
