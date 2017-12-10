@@ -51,33 +51,31 @@ main([FileName, Word]) when is_list(FileName) and is_list(Word) ->
 
     try
         read_by_line(Device, 1),
-        % [{"the",3}, {"the",15}, {"the",17}, {"the",18}] -> [3, 15, 17, 18]
-        LineNums = proplists:append_values(Word, ets:lookup(index, Word)),
-        io:format("~p: ~p", [Word, to_range(LineNums)])
+        io:format("~p: ~p", [Word, to_range(ets:lookup(index, Word))])
     after
         file:close(Device),
         ets:delete(index)
         % erlang:halt(0)
     end.
 
-% { "foo" , [{3,5},{7,7},{11,13}] }
-%           3, 4, 5, 7, 11, 12, 13
 
-
-% [3, 4, 5, 7, 11, 12, 13]
-% [{3, 5}, {7, 7}, {11, 13}]
-to_range(L) -> to_range(L, []).
+to_range(L) ->
+    % converts
+    % [{"the",3}, {"the",15}, {"the",17}, {"the",18}, {"the",19}]
+    % to [{3, 3}, {15, 15}, {17, 19}]
+    % so its something like range =)
+    to_range(L, []).
 
 to_range([], Acc) -> lists:reverse(Acc);
 
-to_range([H|T], []) ->
-    to_range(T, [{H, H}]);
+to_range([{_, LineNum}|T], []) ->
+    to_range(T, [{LineNum, LineNum}]);
 
-to_range([H|T], Acc) ->
+to_range([{_, LineNum}|T], Acc) ->
     [{Start, End}|T1] = Acc,
     if
-        H - End =< 1 ->
-            to_range(T, [{Start, H}|T1]);
-        H - End > 1 ->
-            to_range(T, [{H, H}|Acc])
+        LineNum - End =< 1 ->
+            to_range(T, [{Start, LineNum}|T1]);
+        LineNum - End > 1 ->
+            to_range(T, [{LineNum, LineNum}|Acc])
     end.
